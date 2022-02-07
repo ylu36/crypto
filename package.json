@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "axios": "^0.25.0",
+    "nodeplotlib": "^1.0.0"
+  }
+}
