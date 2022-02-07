@@ -63,6 +63,7 @@ def strategy(df, use_adx=False, use_obv=False, use_rsi=False):
   print_compound_chart(df, buy_price, sell_price)
 
 def adx_strategy(df):
+  print("ADX strategy:")
   df.index = range(len(df['close']))
   signal = [0] * len(df['close'])
   buy_price = [np.nan] * len(df['close'])
@@ -73,16 +74,20 @@ def adx_strategy(df):
     # When the shorter-term MA crosses above the longer-term MA, it's a buy signal
     elif df['ewm_' + str(short_ema)][i-1] < df['ewm_' + str(long_ema)][i-1] and df['ewm_' + str(short_ema)][i] >= df['ewm_' + str(long_ema)][i]:
       buy_price[i] = (df['close'][i])
+      print(i, "buy@", buy_price[i])
       signal[i] = (1)
     # When the shorter-term MA crosses below the longer-term MA, it's a sell signal
     elif df['ewm_' + str(short_ema)][i-1] > df['ewm_' + str(long_ema)][i-1] and df['ewm_' + str(short_ema)][i] < df['ewm_' + str(long_ema)][i]:
       sell_price[i] = (df['close'][i])
+      print(i, "sell@", sell_price[i])
       signal[i] = (-1)
     else:
       signal[i] = (0)
+  print('\n')
   return signal, buy_price, sell_price
 
 def rsi_strategy(df):
+  print("RSI strategy:")
   df.index = range(len(df['close']))
   signal = [0] * len(df['close'])
   buy_price = [np.nan] * len(df['close'])
@@ -95,15 +100,19 @@ def rsi_strategy(df):
       signal[i] = (0)
     elif df['rsi'][i] <= 30 and df['rsi'][i- 1] > 30:
       buy_price[i] = (df['close'][i])
+      print(i, "buy@", buy_price[i])
       signal[i] = (1)
     elif df['rsi'][i] >= 70 and df['rsi'][i- 1] < 70:
       sell_price[i] = (df['close'][i])
+      print(i, "sell@", sell_price[i])
       signal[i] = (-1)
     else:
       signal[i] = (0)
+  print('\n')
   return signal, buy_price, sell_price
 
 def obv_strategy(df):
+  print("OBV strategy:")
   df.index = range(len(df['close']))
   signal = [0] * len(df['close'])
   buy_price = [np.nan] * len(df['close'])
@@ -113,41 +122,52 @@ def obv_strategy(df):
     # If OBV > OBV_EMA Then Buy
     if df['obv'][i] > df['obv_ema'][i] and flag != 1:
       buy_price[i] = (df['close'][i])
+      print(i, "buy@", buy_price[i])
       signal[i] = (1)
       flag = 1
     elif df['obv'][i] < df['obv_ema'][i] and flag != 0:
       sell_price[i] = (df['close'][i])
+      print(i, "sell@", sell_price[i])
       signal[i] = (-1)
       flag = 0
     else:
       signal[i] = (0)
+  print('\n')
   return signal, buy_price, sell_price
 
-def plot_helper(ax1, ax2, buy_price, sell_price, df):
+def plot_helper(ax1, ax2, buy_price, sell_price, df, show_subplot):
   green = mlines.Line2D([], [], color='green', marker='^', markersize=10, label='buy')
   red = mlines.Line2D([], [], color='red', marker='v', markersize=10, label='sell')
-  ax1.plot(df.index, buy_price, marker = '^', color = '#26a69a', markersize = 12, linewidth = 0, label = 'BUY SIGNAL')
-  ax1.plot(df.index, sell_price, marker = 'v', color = '#f44336', markersize = 12, linewidth = 0, label = 'SELL SIGNAL')
-  ax2.plot(df['ewm_'+str(short_ema)], color = '#26a69a', label = 'ewm' + str(short_ema), linewidth = 3, alpha = 0.3)
-  ax2.plot(df['ewm_'+str(long_ema)], color = '#f44336', label = 'ewm' + str(long_ema), linewidth = 3, alpha = 0.3)
+  for i in range(len(buy_price)):
+    if buy_price[i] > 0:
+      ax1.annotate(buy_price[i], xy= (i, buy_price[i]), xytext =(i, buy_price[i]*1.1), arrowprops = dict(facecolor ='green', shrink = 0.05),)
+  for i in range(len(sell_price)):
+    if sell_price[i] > 0:
+      ax1.annotate(sell_price[i], xy= (i, sell_price[i]), xytext =(i, sell_price[i]*1.1), arrowprops = dict(facecolor ='red', shrink = 0.05),)
+  if show_subplot:
+    ax2.plot(df['ewm_'+str(short_ema)], color = '#26a69a', label = 'ewm' + str(short_ema), linewidth = 3, alpha = 0.3)
+    ax2.plot(df['ewm_'+str(long_ema)], color = '#f44336', label = 'ewm' + str(long_ema), linewidth = 3, alpha = 0.3)
+    ax2.legend()
   ax1.set_title(ticker + ' CLOSING PRICE')
   ax1.plot(df['close'], linewidth = 3, color = '#ff9800', alpha = 0.6)
   ax1.legend(handles=[red, green])
-  ax2.legend()
 
 def print_compound_chart(df, buy_price, sell_price):
   ax1 = plt.subplot2grid((11,1), (0,0), rowspan = 5, colspan = 1)
   ax2 = plt.subplot2grid((11,1), (6,0), rowspan = 5, colspan = 1)
-  plot_helper(ax1, ax2, buy_price, sell_price, df)
+  plot_helper(ax1, ax2, buy_price, sell_price, df, True)
   plt.show()
 
 def print_chart(df, buy_price, sell_price, indicator):
+  show_subplot = True if indicator == 'ADX'+str(adx_interval) else False
   ax1 = plt.subplot2grid((17,1), (0,0), rowspan = 5, colspan = 1)
-  ax2 = plt.subplot2grid((17,1), (6,0), rowspan = 5, colspan = 1)
+  ax2 = np.nan
+  if show_subplot:
+    ax2 = plt.subplot2grid((17,1), (6,0), rowspan = 5, colspan = 1)
   ax3 = plt.subplot2grid((17,1), (13,0), rowspan = 5, colspan = 1)
-  plot_helper(ax1, ax2, buy_price, sell_price, df)
+  plot_helper(ax1, ax2, buy_price, sell_price, df, show_subplot)
   ax3.plot(df[indicator], color = '#2196f3', label = indicator, linewidth = 3)
-  if indicator == 'ADX'+str(adx_interval):
+  if indicator == 'ADX' + str(adx_interval):
     ax3.axhline(30, color = 'grey', linewidth = 2, linestyle = '--')
   elif indicator == 'rsi':
     ax3.axhline(30, color = 'grey', linewidth = 2, linestyle = '--')
@@ -175,8 +195,6 @@ def create_position(df, signal):
           position[i] = 0
       else:
           position[i] = position[i-1]
-  print(position)
-  print(len(signal) == len(df['close']))
   close_price = df['close']
   plus_di = df['+DM']
   minus_di = df['-DM']
@@ -198,8 +216,10 @@ def main():
   df['rsi'] = pta.rsi(df['close'], length = 14)
   df['obv'] = pta.obv(df['close'], df['volume'])
   df['obv_ema'] = df['obv'].ewm(com=30).mean() # note: try diff window
+  print(ticker + " price data:")
   print(df)
-  strategy(df, use_adx=True, use_obv=False, use_rsi=True)
+  print('=======\n')
+  strategy(df, use_adx=1, use_obv=0, use_rsi=1)
 
 if __name__ == "__main__":
   main()
