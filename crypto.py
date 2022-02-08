@@ -160,11 +160,12 @@ def print_compound_chart(df, buy_price, sell_price):
 
 def print_chart(df, buy_price, sell_price, indicator):
   show_subplot = True if indicator == 'ADX'+str(adx_interval) else False
-  ax1 = plt.subplot2grid((17,1), (0,0), rowspan = 5, colspan = 1)
+  index = 17 if show_subplot else 11
+  ax1 = plt.subplot2grid((index,1), (0,0), rowspan = 5, colspan = 1)
   ax2 = np.nan
+  ax3 = plt.subplot2grid((index,1), (6,0), rowspan = 5, colspan = 1)
   if show_subplot:
-    ax2 = plt.subplot2grid((17,1), (6,0), rowspan = 5, colspan = 1)
-  ax3 = plt.subplot2grid((17,1), (13,0), rowspan = 5, colspan = 1)
+    ax2 = plt.subplot2grid((index,1), (13,0), rowspan = 5, colspan = 1)
   plot_helper(ax1, ax2, buy_price, sell_price, df, show_subplot)
   ax3.plot(df[indicator], color = '#2196f3', label = indicator, linewidth = 3)
   if indicator == 'ADX' + str(adx_interval):
