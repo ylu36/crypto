@@ -10,11 +10,12 @@ const getBinanceData = async(ticker) => {
     return;
   }
   const message = fs.createWriteStream(`data_${ticker}.csv`);
-  message.write(`open,high,low,close,volume` + '\n');
+  message.write(`timestamp,open,high,low,close,volume` + '\n');
   
   for (let i = 0; i <res.data.length; i++){
     let block = res.data[i];
-        message.write(i + ',' + block[1] + ',' + block[2] + ',' +block[3] + ',' + block[4] + ',' + block[5]+ '\n');
+    let time = new Date(block[0]).toString().slice(4, 21);
+    message.write(i + ',' + time + ',' + block[1] + ',' + block[2] + ',' +block[3] + ',' + block[4] + ',' + block[5]+ '\n');
   }
   message.close();
 }

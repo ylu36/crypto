@@ -249,7 +249,9 @@ def create_position(df, signal):
 
 def main():
   df = pd.read_csv('data_' + ticker + '.csv', sep=',', skiprows=[i for i in range(1,200)])
+  temp = df['timestamp']
   df = df.apply(pd.to_numeric, errors='coerce')
+  df['timestamp'] = temp
   df['change'] = df.apply(lambda row: (row['close'] / row['open'] - 1), axis=1)
   df['ewm_' + str(short_ema)] = df['open'].ewm(span=short_ema, adjust=False).mean()
   df['ewm_' + str(long_ema)] = df['open'].ewm(span=long_ema, adjust=False).mean()
