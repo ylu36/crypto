@@ -114,12 +114,12 @@ def adx_strategy(df):
     # When the shorter-term MA crosses above the longer-term MA, it's a buy signal
     elif df['ewm_' + str(short_ema)][i-1] < df['ewm_' + str(long_ema)][i-1] and df['ewm_' + str(short_ema)][i] >= df['ewm_' + str(long_ema)][i]:
       buy_price[i] = (df['close'][i])
-      print(i, "buy@", buy_price[i])
+      print(df['timestamp'][i], "buy@", buy_price[i])
       signal[i] = (1)
     # When the shorter-term MA crosses below the longer-term MA, it's a sell signal
     elif df['ewm_' + str(short_ema)][i-1] > df['ewm_' + str(long_ema)][i-1] and df['ewm_' + str(short_ema)][i] < df['ewm_' + str(long_ema)][i]:
       sell_price[i] = (df['close'][i])
-      print(i, "sell@", sell_price[i])
+      print(df['timestamp'][i], "sell@", sell_price[i])
       signal[i] = (-1)
     else:
       signal[i] = (0)
@@ -162,12 +162,12 @@ def obv_strategy(df):
     # If OBV > OBV_EMA Then Buy
     if df['obv'][i] > df['obv_ema'][i] and flag != 1:
       buy_price[i] = (df['close'][i])
-      print(i, "buy@", buy_price[i])
+      print(df['timestamp'][i], "buy@", buy_price[i])
       signal[i] = (1)
       flag = 1
     elif df['obv'][i] < df['obv_ema'][i] and flag != 0:
       sell_price[i] = (df['close'][i])
-      print(i, "sell@", sell_price[i])
+      print(df['timestamp'][i], "sell@", sell_price[i])
       signal[i] = (-1)
       flag = 0
     else:
