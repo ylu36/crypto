@@ -140,11 +140,11 @@ def rsi_strategy(df):
       signal[i] = (0)
     elif df['rsi'][i] <= 30 and df['rsi'][i- 1] > 30:
       buy_price[i] = (df['close'][i])
-      print(i, "buy@", buy_price[i])
+      print(df['timestamp'][i], "buy@", buy_price[i])
       signal[i] = (1)
     elif df['rsi'][i] >= 70 and df['rsi'][i- 1] < 70:
       sell_price[i] = (df['close'][i])
-      print(i, "sell@", sell_price[i])
+      print(df['timestamp'][i], "sell@", sell_price[i])
       signal[i] = (-1)
     else:
       signal[i] = (0)
