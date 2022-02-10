@@ -38,7 +38,7 @@ def ADX(df, interval):
   del df['DX']
   return df
   
-def strategy(df, use_adx=False, use_obv=False, use_rsi=False):
+def strategy(df, use_adx=False, use_obv=False, use_rsi=False, use_mfi=False):
   signal_adx = [np.nan] * len(df['close'])
   signal_rsi = [np.nan] * len(df['close'])
   signal_obv = [np.nan] * len(df['close'])
@@ -54,14 +54,42 @@ def strategy(df, use_adx=False, use_obv=False, use_rsi=False):
   if use_rsi:
     signal_rsi, buy_price1, sell_price1 = rsi_strategy(df)
     print_chart(df, buy_price1, sell_price1, 'rsi')
+  if use_mfi:
+    signal_mfi, buy_price1, sell_price1 = mfi_strategy(df)
+    print_chart(df, buy_price1, sell_price1, 'mfi')
   for i in range(len(df['close'])):
-    signal_total[i] = signal_adx[i] or signal_rsi[i] or signal_obv[i]
+    signal_total[i] = signal_adx[i] or signal_rsi[i] or signal_obv[i] or signal_mfi[i]
     if signal_total[i] == 1:
       buy_price[i] = df['close'][i]
     elif signal_total[i] == -1:
       sell_price[i] = df['close'][i]
   print_compound_chart(df, buy_price, sell_price)
 
+def mfi_strategy(df):
+  print("MFI strategy:")
+  df.index = range(len(df['close']))
+  signal = [0] * len(df['close'])
+  buy_price = [np.nan] * len(df['close'])
+  sell_price = [np.nan] * len(df['close'])
+  # leading indicator
+  # only count first crossover because second is just returning to normal
+  # noise when rsi crosses over just a bit
+  for i in range(len(df['close'])):
+    if math.isnan(df['mfi'][i]):
+      signal[i] = (0)
+    elif df['mfi'][i] <= 20 and df['mfi'][i- 1] > 20:
+      buy_price[i] = (df['close'][i])
+      print(i, "buy@", buy_price[i])
+      signal[i] = (1)
+    elif df['mfi'][i] >= 80 and df['mfi'][i- 1] < 80:
+      sell_price[i] = (df['close'][i])
+      print(i, "sell@", sell_price[i])
+      signal[i] = (-1)
+    else:
+      signal[i] = (0)
+  print('\n')
+  return signal, buy_price, sell_price
+ 
 def adx_strategy(df):
   print("ADX strategy:")
   df.index = range(len(df['close']))
@@ -100,11 +128,11 @@ def rsi_strategy(df):
       signal[i] = (0)
     elif df['rsi'][i] <= 30 and df['rsi'][i- 1] > 30:
       buy_price[i] = (df['close'][i])
-      print(df['timestamp'][i], "buy@", buy_price[i])
+      print(i, "buy@", buy_price[i])
       signal[i] = (1)
     elif df['rsi'][i] >= 70 and df['rsi'][i- 1] < 70:
       sell_price[i] = (df['close'][i])
-      print(df['timestamp'][i], "sell@", sell_price[i])
+      print(i, "sell@", sell_price[i])
       signal[i] = (-1)
     else:
       signal[i] = (0)
@@ -173,6 +201,9 @@ def print_chart(df, buy_price, sell_price, indicator):
   elif indicator == 'rsi':
     ax3.axhline(30, color = 'grey', linewidth = 2, linestyle = '--')
     ax3.axhline(70, color = 'grey', linewidth = 2, linestyle = '--')
+  elif indicator == 'mfi':
+    ax3.axhline(20, color = 'grey', linewidth = 2, linestyle = '--')
+    ax3.axhline(80, color = 'grey', linewidth = 2, linestyle = '--')
   else:
     ax3.plot(df['obv_ema'], color = '#26a69a', label = 'obv_ema', linewidth = 3)
     ax3.legend()
@@ -208,7 +239,7 @@ def create_position(df, signal):
   return strategy
 
 def main():
-  df = pd.read_csv('data_' + ticker + '.csv', sep=',', skiprows=[i for i in range(1,200)])
+  df = pd.read_csv('data_' + ticker + '.csv', sep=',', skiprows=[i for i in range(1,100)])
   temp = df['timestamp']
   df = df.apply(pd.to_numeric, errors='coerce')
   df['timestamp'] = temp
@@ -217,12 +248,13 @@ def main():
   df['ewm_' + str(long_ema)] = df['open'].ewm(span=long_ema, adjust=False).mean()
   df = ADX(df, adx_interval)
   df['rsi'] = pta.rsi(df['close'], length = 14)
+  df['mfi'] = pta.mfi(df['high'], df['low'], df['close'], df['volume'])
   df['obv'] = pta.obv(df['close'], df['volume'])
   df['obv_ema'] = df['obv'].ewm(com=30).mean() # note: try diff window
   print(ticker + " price data:")
   print(df)
   print('=======\n')
-  strategy(df, use_adx=1, use_obv=0, use_rsi=1)
+  strategy(df, use_adx=0, use_obv=0, use_rsi=1, use_mfi=1)
 
 if __name__ == "__main__":
   main()
