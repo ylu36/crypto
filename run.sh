@@ -1,5 +1,10 @@
+#!/bin/sh
+PATH=/usr/local/bin:/usr/local/sbin:~/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
 TICKER=$1
-echo "downloading $TICKER price data from Binance..."
-node crypto.js $TICKER
+FREQ=$2
+CRON=$3
+echo "downloading $TICKER price data (every ${FREQ}hr) from Binance..."
+node crypto.js $TICKER $FREQ
 echo "running models..."
-python3 crypto.py $TICKER
+python3 crypto.py $TICKER $CRON

@@ -2,8 +2,9 @@ let axios = require('axios').default;
 const fs = require('fs')
 
 // https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#klinecandlestick-data
-const getBinanceData = async(ticker) => {
-  let res = await axios.get(`https://binance.com/api/v3/klines?symbol=${ticker}USDT&interval=8h&limit=1000`);
+const getBinanceData = async(ticker, interval) => {
+  interval = interval || 8;
+  let res = await axios.get(`https://binance.com/api/v3/klines?symbol=${ticker}USDT&interval=${interval}h&limit=1000`);
   let json = {};
   if(res.status != 200) {
     console.error('bad response from Binance api');
@@ -20,4 +21,4 @@ const getBinanceData = async(ticker) => {
   message.close();
 }
 
-getBinanceData(process.argv[2].toUpperCase());
+getBinanceData(process.argv[2].toUpperCase(), process.argv[3]);
