@@ -26,8 +26,7 @@ def email(title, content):
     html_content=content)
   try:
     response = sg.send(message)
-    print("email is sent with ")
-    print(response.status_code)
+    print("email is sent with " + str(response.status_code))
   except Exception as e:
     print("error sending email:")
     print(e.message)
@@ -104,7 +103,7 @@ def strategy(df, use_adx=False, use_obv=False, use_rsi=False, use_mfi=False):
   print_compound_chart(df, buy_price, sell_price)
 
 def mfi_strategy(df):
-  print("MFI strategy:")
+  # print("MFI strategy:")
   df.index = range(len(df['close']))
   signal = [0] * len(df['close'])
   buy_price = [np.nan] * len(df['close'])
@@ -117,11 +116,11 @@ def mfi_strategy(df):
       signal[i] = (0)
     elif df['mfi'][i-1] <= 20*(1+threshold) and df['mfi'][i] > 20*(1+threshold):
       buy_price[i] = (df['close'][i])
-      print(i, "buy@", buy_price[i])
+      # print(i, "buy@", buy_price[i])
       signal[i] = (1)
     elif df['mfi'][i-1] >= 80*(1-threshold) and df['mfi'][i] < 80*(1-threshold):
       sell_price[i] = (df['close'][i])
-      print(i, "sell@", sell_price[i])
+      # print(i, "sell@", sell_price[i])
       signal[i] = (-1)
     else:
       signal[i] = (0)
@@ -141,12 +140,12 @@ def adx_strategy(df):
     # When the shorter-term MA crosses above the longer-term MA, it's a buy signal
     elif df['ewm_' + str(short_ema)][i-1] < df['ewm_' + str(long_ema)][i-1] and df['ewm_' + str(short_ema)][i] >= df['ewm_' + str(long_ema)][i]:
       buy_price[i] = (df['close'][i])
-      print(df['timestamp'][i], "buy@", buy_price[i])
+      # print(df['timestamp'][i], "buy@", buy_price[i])
       signal[i] = (1)
     # When the shorter-term MA crosses below the longer-term MA, it's a sell signal
     elif df['ewm_' + str(short_ema)][i-1] > df['ewm_' + str(long_ema)][i-1] and df['ewm_' + str(short_ema)][i] < df['ewm_' + str(long_ema)][i]:
       sell_price[i] = (df['close'][i])
-      print(df['timestamp'][i], "sell@", sell_price[i])
+      # print(df['timestamp'][i], "sell@", sell_price[i])
       signal[i] = (-1)
     else:
       signal[i] = (0)
@@ -167,11 +166,11 @@ def rsi_strategy(df):
       signal[i] = (0)
     elif df['rsi'][i-1] <= 30 and df['rsi'][i] > 30:
       buy_price[i] = (df['close'][i])
-      print(df['timestamp'][i], "buy@", buy_price[i])
+      # print(df['timestamp'][i], "buy@", buy_price[i])
       signal[i] = (1)
     elif df['rsi'][i-1] >= 70 and df['rsi'][i] < 70:
       sell_price[i] = (df['close'][i])
-      print(df['timestamp'][i], "sell@", sell_price[i])
+      # print(df['timestamp'][i], "sell@", sell_price[i])
       signal[i] = (-1)
     else:
       signal[i] = (0)
@@ -292,7 +291,7 @@ def main():
   df['obv'] = pta.obv(df['close'], df['volume'])
   df['obv_ema'] = df['obv'].ewm(com=30).mean() # note: try diff window
   print(ticker + " price data:")
-  print(df)
+  print(df.tail(2))
   print('=======\n')
   strategy(df, use_adx=0, use_obv=0, use_rsi=0, use_mfi=1)
 
